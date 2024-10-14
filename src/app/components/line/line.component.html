@@ -1,5 +1,8 @@
 <div class="main">
 	@for(i of [0,1,2,3,4]; track i){
-	<app-cell [class]="classes[i] + ' cell'" [character]="word[i]"></app-cell>
+	<app-cell
+		[class]="(selected && position == i ? classSelected : '') + ' cell'"
+		[character]="word[i]"
+	></app-cell>
 	}
 </div>

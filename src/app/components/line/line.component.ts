@@ -20,7 +20,7 @@ import { DOCUMENT } from '@angular/common';
 export class LineComponent implements OnInit {
 	length = 5;
 	@Input() selected = false;
-	classes = ['selected', '', '', '', ''];
+	classSelected = 'selected';
 	word: string[] = [];
 	@Output() emitter = new EventEmitter<string[]>();
 	position = 0;
@@ -31,25 +31,35 @@ export class LineComponent implements OnInit {
 	ngOnInit(): void {
 		this.document.addEventListener('keydown', (char) => {
 			if (this.selected) {
-				this.changeChar(char);
+				if (this.alphabet.includes(char.key)) this.changeChar(char);
+				if (char.key == 'Backspace') this.erase();
 				this.emitter.emit(this.word);
 			}
 		});
 	}
 	public changeChar(char: KeyboardEvent): void {
-		if (this.position < this.length) {
+		if (this.word.length < this.length) {
 			if (this.alphabet.includes(char.key)) {
 				this.word.push(char.key);
-				this.position += 1;
-				this.classes.fill('selected', this.position, this.position + 1);
-				this.classes.fill('', this.position - 1, this.position);
 			}
 		}
-		if (this.position == this.length) {
+		if (this.position < this.length - 1) this.position += 1;
+		if (
+			this.position == this.length - 1 &&
+			this.word.length == this.length
+		) {
 			if (this.alphabet.includes(char.key))
 				this.word[this.length - 1] = char.key;
-			this.classes[this.length - 1] = 'selected';
 		}
 		console.log(this.word.join(''));
+		console.log(this.position);
+	}
+	public erase() {
+		if (this.position < 0) return;
+		if (this.position == 0 || this.position == this.word.length - 1) {
+			this.word.splice(this.position, 1);
+		} else if (this.position > 0) this.word.splice(this.position - 1, 1);
+		if (this.position > 0 && this.word.length < this.position)
+			this.position -= 1;
 	}
 }
