@@ -1,6 +1,11 @@
-<div class="main">
+<div class="main theme-dark">
+	<span class="text">Wordle</span>
 	@for(i of [0,1,2,3,4]; track i){
-	<app-line [selected]="i == selected" (emitter)="getWord($event)"></app-line>
+	<app-line
+		[winningWord]="winningWord"
+		[selected]="i == selected"
+		(emitter)="getWord($event)"
+	></app-line>
 	}
 	<button (click)="submitWin()"></button>
 </div>

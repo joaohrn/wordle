@@ -25,14 +25,16 @@ export class LineComponent implements OnInit {
 	@Output() emitter = new EventEmitter<string[]>();
 	position = 0;
 	alphabet = 'abcdefghijklmnopqrstuvwxyz';
+	@Input() winningWord = '';
 
 	constructor(@Inject(DOCUMENT) private document: Document) {}
 
 	ngOnInit(): void {
-		this.document.addEventListener('keydown', (char) => {
+		this.document.addEventListener('keyup', (char) => {
 			if (this.selected) {
 				if (this.alphabet.includes(char.key)) this.changeChar(char);
 				if (char.key == 'Backspace') this.erase();
+				if (char.key == 'Enter') this.submitWin();
 				this.emitter.emit(this.word);
 			}
 		});
@@ -61,5 +63,11 @@ export class LineComponent implements OnInit {
 		} else if (this.position > 0) this.word.splice(this.position - 1, 1);
 		if (this.position > 0 && this.word.length < this.position)
 			this.position -= 1;
+	}
+	public submitWin() {
+		console.log(this.word);
+		if (this.word.join('') == this.winningWord) {
+			alert('You win');
+		}
 	}
 }

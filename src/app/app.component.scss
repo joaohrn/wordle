@@ -1,8 +1,23 @@
+body {
+	height: 100%;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+}
 .main {
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
-	height: 100%;
+	min-height: 100%;
 	width: 100%;
+	margin: 0;
+}
+.theme-dark {
+	background-color: #313031;
+}
+.text {
+	font-size: 3em;
+	color: #e4f1c5;
+	margin: 0 0 40px;
 }

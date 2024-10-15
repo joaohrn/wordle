@@ -8,6 +8,7 @@ import { Component, Input, OnInit } from '@angular/core';
 })
 export class CellComponent implements OnInit {
 	@Input() character = ' ';
+	@Input() result = '';
 
 	constructor() {}
 
