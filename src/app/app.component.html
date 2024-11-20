@@ -3,9 +3,9 @@
 	@for(i of [0,1,2,3,4]; track i){
 	<app-line
 		[winningWord]="winningWord"
-		[selected]="i == selected"
-		(emitter)="getWord($event)"
+		[selected]="i == attemptNumber()"
+		(wordOut)="getWord($event)"
+		(wrongAnswer)="getAttemptNum($event)"
 	></app-line>
 	}
-	<button (click)="submitWin()"></button>
 </div>
