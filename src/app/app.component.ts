@@ -1,7 +1,4 @@
-import { DOCUMENT } from '@angular/common';
-import { Component, ElementRef, Inject, OnInit, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { CellComponent } from './components/cell/cell.component';
+import { Component, signal } from '@angular/core';
 import { LineComponent } from './components/line/line.component';
 
 @Component({
@@ -15,12 +12,15 @@ export class AppComponent {
 	winningWord = 'lutem';
 	attemptNumber = signal(0);
 	word!: string[];
+	hasWon = false;
 	public getWord(event: string[]) {
 		this.word = event;
 	}
-	getAttemptNum(event: boolean) {
-		this.attemptNumber.set(
-			event ? this.attemptNumber() + 1 : this.attemptNumber()
-		);
+	public registerAttempt(event: boolean) {
+		if (event) {
+			this.hasWon = true;
+		} else {
+			this.attemptNumber.set(this.attemptNumber() + 1);
+		}
 	}
 }

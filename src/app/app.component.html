@@ -5,7 +5,7 @@
 		[winningWord]="winningWord"
 		[selected]="i == attemptNumber()"
 		(wordOut)="getWord($event)"
-		(wrongAnswer)="getAttemptNum($event)"
+		(rightAnswer)="registerAttempt($event)"
 	></app-line>
 	}
 </div>

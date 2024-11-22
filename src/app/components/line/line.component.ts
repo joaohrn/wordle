@@ -1,16 +1,8 @@
-import {
-	Component,
-	EventEmitter,
-	Inject,
-	input,
-	Input,
-	OnInit,
-	Output,
-	signal,
-} from '@angular/core';
+import { Component, Inject, input, OnInit, output } from '@angular/core';
 import { CellComponent } from '../cell/cell.component';
 import { DOCUMENT } from '@angular/common';
 
+const alphabet = 'abcdefghijklmnopqrstuvwxyz';
 @Component({
 	selector: 'app-line',
 	standalone: true,
@@ -19,81 +11,105 @@ import { DOCUMENT } from '@angular/common';
 	styleUrls: ['./line.component.scss'],
 })
 export class LineComponent implements OnInit {
-	length = 5;
-	@Input() selected = false;
-	@Input() attempt = 0;
-	@Input() won = false;
-	@Output() wrongAnswer = new EventEmitter<boolean>();
-	classSelected = 'selected';
-	classEnd: string[] = [];
-	word: string[] = [];
-	@Output() wordOut = new EventEmitter<string[]>();
-	position = 0;
-	alphabet = 'abcdefghijklmnopqrstuvwxyz';
-	@Input() winningWord = '';
+	winningWord = input('');
+	won = input(false);
+	selected = input(false);
+	wordOut = output<string[]>();
+	rightAnswer = output<boolean>();
+	length: number = 5;
+	position: number = 0;
+	word: string[] = Array(this.length).fill('');
+	colorResult: string[] = Array(this.length).fill('');
 
 	constructor(@Inject(DOCUMENT) private document: Document) {}
 
 	ngOnInit(): void {
 		this.document.addEventListener('keydown', (char) => {
-			if (this.selected) {
-				if (this.alphabet.includes(char.key)) this.changeChar(char);
-				if (char.key == 'Backspace') this.erase();
-				if (char.key == 'Enter' && this.word.length == 5 && !this.won) {
-					this.colorChange();
-					this.submitWin();
+			if (this.selected()) {
+				if (alphabet.includes(char.key) && !this.won())
+					this.position = this.changeChar(
+						char,
+						this.word,
+						this.length,
+						this.position
+					);
+				if (char.key == 'Backspace')
+					this.position = this.erase(this.word, this.position);
+				if (char.key == 'ArrowLeft')
+					this.position = this.move(
+						'left',
+						this.position,
+						this.length
+					);
+				if (char.key == 'ArrowRight')
+					this.position = this.move(
+						'right',
+						this.position,
+						this.length
+					);
+				if (
+					char.key == 'Enter' &&
+					!this.word.includes('') &&
+					!this.won()
+				) {
+					this.colorChange(
+						this.word,
+						this.winningWord().split('').slice(),
+						this.length
+					);
+					this.submitWin(this.word.join(''), this.winningWord());
 				}
 				this.wordOut.emit(this.word);
 			}
 		});
 	}
-	public changeChar(char: KeyboardEvent): void {
-		if (this.word.length < this.length) {
-			if (this.alphabet.includes(char.key)) {
-				this.word.push(char.key);
+	public changeChar(
+		char: KeyboardEvent,
+		word: string[],
+		length: number,
+		position: number
+	): number {
+		word[position] = char.key;
+		if (position < length - 1) position += 1;
+		return position;
+	}
+	public erase(word: string[], position: number): number {
+		if (word[position] === '') {
+			word[position - 1] = '';
+			if (position > 0) position -= 1;
+		} else {
+			word[position] = '';
+		}
+		return position;
+	}
+	public move(
+		direction: 'left' | 'right',
+		position: number,
+		length: number
+	): number {
+		if (direction === 'left' && position > 0) position -= 1;
+		if (direction === 'right' && position < length - 1) position += 1;
+		return position;
+	}
+	public submitWin(word: string, winningWord: string) {
+		if (word == winningWord) {
+			alert('You win');
+			this.rightAnswer.emit(true);
+		} else {
+			this.rightAnswer.emit(false);
+		}
+	}
+	public colorChange(word: string[], winningWord: string[], length: number) {
+		for (let i = 0; i <= length - 1; i++) {
+			if (word[i] === winningWord[i]) {
+				winningWord[i] = '';
+				this.colorResult[i] = 'correct-position';
 			}
 		}
-		if (this.position < this.length - 1) this.position += 1;
-		if (
-			this.position == this.length - 1 &&
-			this.word.length == this.length
-		) {
-			if (this.alphabet.includes(char.key))
-				this.word[this.length - 1] = char.key;
-		}
-	}
-	public erase() {
-		if (this.position < 0) return;
-		if (this.position == 0 || this.position == this.word.length - 1) {
-			this.word.splice(this.position, 1);
-		} else if (this.position > 0) this.word.splice(this.position - 1, 1);
-		if (this.position > 0 && this.word.length < this.position)
-			this.position -= 1;
-	}
-	public submitWin() {
-		if (this.word.join('') == this.winningWord) {
-			alert('You win');
-			this.won = true;
-		} else {
-			this.attempt += 1;
-			this.wrongAnswer.emit(true);
-		}
-	}
-	public colorChange() {
-		let tempArray = this.winningWord.split('').slice();
-		for (let i = 0; i <= 4; i++) {
-			if (this.word[i] === tempArray[i]) {
-				tempArray[i] = '';
-				this.classEnd.push('correct-position');
-			} else if (
-				tempArray.includes(this.word[i]) &&
-				tempArray[i] !== this.word[i]
-			) {
-				tempArray[i] = '';
-				this.classEnd.push('correct-letter');
-			} else {
-				tempArray[i] = '';
-				this.classEnd.push('');
+		for (let i = 0; i <= length - 1; i++) {
+			if (winningWord.includes(word[i]) && winningWord[i] !== word[i]) {
+				this.colorResult[i] = 'correct-letter';
+				winningWord[winningWord.findIndex((e) => e === word[i])] = '';
 			}
 		}
 	}

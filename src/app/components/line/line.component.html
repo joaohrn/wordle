@@ -1,9 +1,9 @@
 <div class="main">
-	@for(i of [0,1,2,3,4]; track i){
+	@for(i of word; track $index){
 	<app-cell
-		[class]="(selected && position == i ? classSelected : '') + ' cell'"
-		[character]="word[i]"
-		[result]="classEnd[i]"
+		[class]="(selected() && position == $index ? 'selected' : '') + ' cell'"
+		[character]="word[$index]"
+		[result]="colorResult[$index]"
 	></app-cell>
 	}
 </div>
