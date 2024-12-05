@@ -1,4 +1,11 @@
-import { Component, Inject, input, OnInit, output } from '@angular/core';
+import {
+	Component,
+	HostListener,
+	Inject,
+	input,
+	OnInit,
+	output,
+} from '@angular/core';
 import { CellComponent } from '../cell/cell.component';
 import { DOCUMENT } from '@angular/common';
 
@@ -10,7 +17,7 @@ const alphabet = 'abcdefghijklmnopqrstuvwxyz';
 	templateUrl: './line.component.html',
 	styleUrls: ['./line.component.scss'],
 })
-export class LineComponent implements OnInit {
+export class LineComponent {
 	winningWord = input('');
 	won = input(false);
 	selected = input(false);
@@ -21,55 +28,41 @@ export class LineComponent implements OnInit {
 	word: string[] = Array(this.length).fill('');
 	colorResult: string[] = Array(this.length).fill('');
 
-	constructor(@Inject(DOCUMENT) private document: Document) {}
-
-	ngOnInit(): void {
-		this.document.addEventListener('keydown', (char) => {
-			if (this.selected()) {
-				if (alphabet.includes(char.key) && !this.won())
-					this.position = this.changeChar(
-						char,
-						this.word,
-						this.length,
-						this.position
-					);
-				if (char.key == 'Backspace')
-					this.position = this.erase(this.word, this.position);
-				if (char.key == 'ArrowLeft')
-					this.position = this.move(
-						'left',
-						this.position,
-						this.length
-					);
-				if (char.key == 'ArrowRight')
-					this.position = this.move(
-						'right',
-						this.position,
-						this.length
-					);
-				if (
-					char.key == 'Enter' &&
-					!this.word.includes('') &&
-					!this.won()
-				) {
-					this.colorChange(
-						this.word,
-						this.winningWord().split('').slice(),
-						this.length
-					);
-					this.submitWin(this.word.join(''), this.winningWord());
-				}
-				this.wordOut.emit(this.word);
+	@HostListener('window:keydown', ['$event'])
+	readKey(char: KeyboardEvent) {
+		if (this.selected()) {
+			if (alphabet.includes(char.key.toLowerCase()) && !this.won())
+				this.position = this.changeChar(
+					char,
+					this.word,
+					this.length,
+					this.position
+				);
+			if (char.key == 'Backspace')
+				this.position = this.erase(this.word, this.position);
+			if (char.key == 'ArrowLeft')
+				this.position = this.move('left', this.position, this.length);
+			if (char.key == 'ArrowRight')
+				this.position = this.move('right', this.position, this.length);
+			if (char.key == 'Enter' && !this.word.includes('') && !this.won()) {
+				this.colorChange(
+					this.word,
+					this.winningWord().split('').slice(),
+					this.length
+				);
+				this.submitWin(this.word.join(''), this.winningWord());
 			}
-		});
+			this.wordOut.emit(this.word);
+		}
 	}
+
 	public changeChar(
 		char: KeyboardEvent,
 		word: string[],
 		length: number,
 		position: number
 	): number {
-		word[position] = char.key;
+		word[position] = char.key.toLowerCase();
 		if (position < length - 1) position += 1;
 		return position;
 	}
