@@ -1,13 +1,6 @@
-import {
-	Component,
-	HostListener,
-	Inject,
-	input,
-	OnInit,
-	output,
-} from '@angular/core';
+import { Component, HostListener, inject, input, output } from '@angular/core';
 import { CellComponent } from '../cell/cell.component';
-import { DOCUMENT } from '@angular/common';
+import { FunctionService } from '../../services/function.service';
 
 const alphabet = 'abcdefghijklmnopqrstuvwxyz';
 @Component({
@@ -18,6 +11,7 @@ const alphabet = 'abcdefghijklmnopqrstuvwxyz';
 	styleUrls: ['./line.component.scss'],
 })
 export class LineComponent {
+	service = inject(FunctionService);
 	winningWord = input('');
 	won = input(false);
 	selected = input(false);
@@ -32,78 +26,40 @@ export class LineComponent {
 	readKey(char: KeyboardEvent) {
 		if (this.selected()) {
 			if (alphabet.includes(char.key.toLowerCase()) && !this.won())
-				this.position = this.changeChar(
+				this.position = this.service.changeChar(
 					char,
 					this.word,
 					this.length,
 					this.position
 				);
 			if (char.key == 'Backspace')
-				this.position = this.erase(this.word, this.position);
+				this.position = this.service.erase(this.word, this.position);
 			if (char.key == 'ArrowLeft')
-				this.position = this.move('left', this.position, this.length);
+				this.position = this.service.move(
+					'left',
+					this.position,
+					this.length
+				);
 			if (char.key == 'ArrowRight')
-				this.position = this.move('right', this.position, this.length);
+				this.position = this.service.move(
+					'right',
+					this.position,
+					this.length
+				);
 			if (char.key == 'Enter' && !this.word.includes('') && !this.won()) {
-				this.colorChange(
+				this.colorResult = this.service.colorChange(
 					this.word,
 					this.winningWord().split('').slice(),
 					this.length
 				);
-				this.submitWin(this.word.join(''), this.winningWord());
+				this.rightAnswer.emit(
+					this.service.submitWin(
+						this.word.join(''),
+						this.winningWord()
+					)
+				);
 			}
 			this.wordOut.emit(this.word);
-		}
-	}
-
-	public changeChar(
-		char: KeyboardEvent,
-		word: string[],
-		length: number,
-		position: number
-	): number {
-		word[position] = char.key.toLowerCase();
-		if (position < length - 1) position += 1;
-		return position;
-	}
-	public erase(word: string[], position: number): number {
-		if (word[position] === '') {
-			word[position - 1] = '';
-			if (position > 0) position -= 1;
-		} else {
-			word[position] = '';
-		}
-		return position;
-	}
-	public move(
-		direction: 'left' | 'right',
-		position: number,
-		length: number
-	): number {
-		if (direction === 'left' && position > 0) position -= 1;
-		if (direction === 'right' && position < length - 1) position += 1;
-		return position;
-	}
-	public submitWin(word: string, winningWord: string) {
-		if (word == winningWord) {
-			alert('You win');
-			this.rightAnswer.emit(true);
-		} else {
-			this.rightAnswer.emit(false);
-		}
-	}
-	public colorChange(word: string[], winningWord: string[], length: number) {
-		for (let i = 0; i <= length - 1; i++) {
-			if (word[i] === winningWord[i]) {
-				winningWord[i] = '';
-				this.colorResult[i] = 'correct-position';
-			}
-		}
-		for (let i = 0; i <= length - 1; i++) {
-			if (winningWord.includes(word[i]) && winningWord[i] !== word[i]) {
-				this.colorResult[i] = 'correct-letter';
-				winningWord[winningWord.findIndex((e) => e === word[i])] = '';
-			}
 		}
 	}
 }
